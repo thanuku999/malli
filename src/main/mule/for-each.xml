@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="10128a14-6ac3-4267-a97b-30943c4df482" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="dcc8a558-004c-498d-9ba2-34af2f536aea" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="deekshith" database="mydb" />
+	</db:config>
+	<flow name="for-eachFlow" doc:id="f9fa205e-3662-4a5f-85aa-69881f802559" >
+		<http:listener doc:name="Listener" doc:id="556a5c0b-5299-480c-bd5b-d18f6dd9cbee" config-ref="HTTP_Listener_config" path="/for-each"/>
+		<logger level="INFO" doc:name="Logger" doc:id="15aa1a57-7f40-465a-900e-45f5d7ad9280" message='"Starting for-each program"'/>
+		<db:insert doc:name="Insert" doc:id="b4398d8f-7f04-4e73-b59f-da5c9ec5ef2e" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into emp(empid,empname,emp_status)values(:empid,:empname,:emp_status)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"empid": payload."empId",
+	"empname":payload."empName",
+	"emp_status":payload."empDp"
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="08e5f1fd-58f4-4922-acc2-121e56d11856" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
